@@ -1,0 +1,278 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import openpyxl
+import time
+
+
+# 各リストの初期化
+name = []
+tel = []
+address = []
+ei_time = []
+open_shop = []
+instaurl = []
+
+
+# WebDriverの初期化
+driver = webdriver.Chrome()
+wb = openpyxl.Workbook()
+sheet = wb.active
+sheet.title = "Sheet1"
+sheet["A1"].value = '店舗名'
+sheet["B1"].value = '電話番号'
+sheet["C1"].value = '住所'
+sheet["D1"].value = '営業時間'
+sheet["E1"].value = 'URL'
+sheet["F1"].value = 'instagramURL'
+
+
+# 食べログのURLを開く
+driver.get('https://tabelog.com/tokyo/A1305/A130501/')
+time.sleep(3)  # ページの読み込みを待つ
+
+
+# ページ遷移しながらデータを取得
+for page in range(1, 3):  # ページ数を調整
+    try:
+        # 店舗リンクを取得
+        restaurant_links = driver.find_elements(By.XPATH, '//h3[@class="list-rst__rst-name"]/a')
+        links = [link.get_attribute('href') for link in restaurant_links]
+        print(f"Page {page}: Found {len(links)} restaurant links")
+
+
+        # 各店舗リンクを訪問して情報を取得
+        for i, link in enumerate(links):
+            try:
+                driver.get(link)
+                time.sleep(3)
+
+
+                # 店舗名
+                name_elem = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.XPATH, '//h2[contains(@class, "display-name")]'))
+                )
+                name.append(name_elem.text)
+                print(f"Restaurant {i+1}: {name[-1]}")
+
+
+                # 電話番号
+                try:
+                    tel_elem = driver.find_element(By.XPATH, '//p[@class="rstdtl-side-yoyaku__tel-number"]')
+                    tel.append(tel_elem.text)
+                except:
+                    tel.append('')
+                print(f"Restaurant {i+1}: Phone {tel[-1]}")
+
+
+                # 住所
+                try:
+                    address_elem = driver.find_element(By.XPATH, '//p[@class="rstinfo-table__address"]')
+                    address.append(address_elem.text)
+                except:
+                    address.append('')
+                print(f"Restaurant {i+1}: Address {address[-1]}")
+
+
+                # 営業時間
+                try:
+                    ei_time_elem = driver.find_element(By.XPATH, '//p[@class="rstinfo-table__time"]')
+                    ei_time.append(ei_time_elem.text)
+                except:
+                    ei_time.append('')
+                print(f"Restaurant {i+1}: Hours {ei_time[-1]}")
+
+
+                # URL
+                open_shop.append(driver.current_url)
+                print(f"Restaurant {i+1}: URL {open_shop[-1]}")
+
+
+                # Instagram URL
+                try:
+                    instaurl_elem = driver.find_element(By.XPATH, '//a[contains(@href, "instagram.com")]')
+                    instaurl.append(instaurl_elem.get_attribute("href"))
+                except:
+                    instaurl.append('')
+                print(f"Restaurant {i+1}: Instagram {instaurl[-1]}")
+
+
+                # Excelにデータを保存
+                sheet.cell(column=1, row=len(name)+1, value=name[-1])
+                sheet.cell(column=2, row=len(tel)+1, value=tel[-1])
+                sheet.cell(column=3, row=len(address)+1, value=address[-1])
+                sheet.cell(column=4, row=len(ei_time)+1, value=ei_time[-1])
+                sheet.cell(column=5, row=len(open_shop)+1, value=open_shop[-1])
+                sheet.cell(column=6, row=len(instaurl)+1, value=instaurl[-1])
+
+
+            except Exception as e:
+                print(f"Error visiting restaurant {i+1}: {e}")
+                continue
+
+
+        # 次のページに移動
+        try:
+            next_page = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//a[contains(@class, "c-pagination__next")]'))
+            )
+            next_page.click()
+            time.sleep(3)
+        except Exception as e:
+            print(f"Error navigating to next page: {e}")
+            break
+
+
+    except Exception as e:
+        print(f"Error on page {page}: {e}")
+        break
+
+
+# Excelファイルを保存
+save_path = r'C:\Users\yukik\Desktop\python\tabelog0702_0040.xlsx'
+wb.save(save_path)
+
+
+# ブラウザを閉じる
+driver.quit()
+wb.close()
+
+
+print("データ取得が完了し、ファイルが保存されました。")
+
+
+
+
+
+
+
+
+
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import openpyxl
+import time
+
+# 各リストの初期化
+name = []
+tel = []
+address = []
+ei_time = []
+open_shop = []
+instaurl = []
+
+# WebDriverの初期化
+driver = webdriver.Chrome()
+wb = openpyxl.Workbook()
+sheet = wb.active
+sheet.title = "Sheet1"
+sheet["A1"].value = '店舗名'
+sheet["B1"].value = '電話番号'
+sheet["C1"].value = '住所'
+sheet["D1"].value = '営業時間'
+sheet["E1"].value = 'URL'
+sheet["F1"].value = 'instagramURL'
+
+# 食べログのURLを開く
+driver.get('https://tabelog.com/tokyo/A1305/A130501/')
+time.sleep(3)  # ページの読み込みを待つ
+
+# ページ遷移しながらデータを取得
+for page in range(1, 3):  # ページ数を調整
+    try:
+        # 店舗リンクを取得
+        restaurant_links = driver.find_elements(By.XPATH, '//h3[@class="list-rst__rst-name"]/a')
+        links = [link.get_attribute('href') for link in restaurant_links]
+        print(f"Page {page}: Found {len(links)} restaurant links")
+
+        # 各店舗リンクを訪問して情報を取得
+        for i, link in enumerate(links):
+            try:
+                driver.get(link)
+                time.sleep(3)
+
+                # 店舗名
+                name_elem = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.XPATH, '//h2[contains(@class, "display-name")]'))
+                )
+                name.append(name_elem.text)
+                print(f"Restaurant {i+1}: {name[-1]}")
+
+                # 電話番号
+                try:
+                    tel_elem = driver.find_element(By.XPATH, '//p[@class="rstdtl-side-yoyaku__tel-number"]')
+                    tel.append(tel_elem.text)
+                except:
+                    tel.append('')
+                print(f"Restaurant {i+1}: Phone {tel[-1]}")
+
+                # 住所
+                try:
+                    address_elem = driver.find_element(By.XPATH, '//p[@class="rstinfo-table__address"]')
+                    address.append(address_elem.text)
+                except:
+                    address.append('')
+                print(f"Restaurant {i+1}: Address {address[-1]}")
+
+                # 営業時間
+                try:
+                    ei_time_elem = driver.find_element(By.XPATH, '//p[@class="rstinfo-table__time"]')
+                    ei_time.append(ei_time_elem.text)
+                except:
+                    ei_time.append('')
+                print(f"Restaurant {i+1}: Hours {ei_time[-1]}")
+
+                # URL
+                open_shop.append(driver.current_url)
+                print(f"Restaurant {i+1}: URL {open_shop[-1]}")
+
+                # Instagram URL
+                try:
+                    instaurl_elem = driver.find_element(By.XPATH, '//a[contains(@href, "instagram.com")]')
+                    instaurl.append(instaurl_elem.get_attribute("href"))
+                except:
+                    instaurl.append('')
+                print(f"Restaurant {i+1}: Instagram {instaurl[-1]}")
+
+                # Excelにデータを保存
+                sheet.cell(column=1, row=len(name)+1, value=name[-1])
+                sheet.cell(column=2, row=len(tel)+1, value=tel[-1])
+                sheet.cell(column=3, row=len(address)+1, value=address[-1])
+                sheet.cell(column=4, row=len(ei_time)+1, value=ei_time[-1])
+                sheet.cell(column=5, row=len(open_shop)+1, value=open_shop[-1])
+                sheet.cell(column=6, row=len(instaurl)+1, value=instaurl[-1])
+
+            except Exception as e:
+                print(f"Error visiting restaurant {i+1}: {e}")
+                continue
+
+        # 次のページに移動
+        try:
+            next_page = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//a[contains(@class, "c-pagination__next")]'))
+            )
+            next_page.click()
+            time.sleep(3)
+        except Exception as e:
+            print(f"Error navigating to next page: {e}")
+            break
+
+    except Exception as e:
+        print(f"Error on page {page}: {e}")
+        break
+
+# Excelファイルを保存
+save_path = r'C:\Users\yukik\Desktop\python\tabelog0702_0040.xlsx'
+wb.save(save_path)
+
+# ブラウザを閉じる
+driver.quit()
+wb.close()
+
+print("データ取得が完了し、ファイルが保存されました。")
+
+
